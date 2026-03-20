@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo TEMPLO Fitness - Gestión Total</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans text-slate-900">
+
+    <header class="bg-indigo-900 text-white p-5 shadow-xl flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-xl font-black tracking-tight italic">𝒩𝓊ℯ𝓋ℴ <span class="text-indigo-400">𝑻𝑬𝑴𝑷𝑳𝑶</span></h1>
+        <button onclick="document.getElementById('modalSocio').classList.remove('hidden')" class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2.5 rounded-2xl font-bold transition-all shadow-lg active:scale-95">+ Nuevo Socio</button>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-4 gap-10">
+        
+        <div class="lg:col-span-1 space-y-4">
+            <h2 class="text-slate-400 uppercase text-[10px] font-black tracking-widest px-4">Panel de Socios</h2>
+            <div id="listaSocios" class="space-y-4 max-h-[75vh] overflow-y-auto pr-2">
+                </div>
+        </div>
+
+        <div id="editorRutina" class="lg:col-span-3 space-y-8 hidden">
+            <div class="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-slate-200">
+                
+                <div class="flex flex-col md:flex-row justify-between gap-8 mb-10">
+                    <div>
+                        <h2 id="displayNombre" class="text-4xl font-black text-slate-800 leading-tight">Nombre</h2>
+                        <p id="displayDNI" class="text-indigo-500 font-mono font-bold mt-1 text-sm tracking-widest"></p>
+                    </div>
+                    <button onclick="descargarPDFSemanal()" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 self-start">
+                        📥 Descargar Plan Semanal (PDF)
+                    </button>
+                </div>
+
+                <div class="bg-rose-50 p-5 rounded-[1.5rem] border border-rose-100 mb-10">
+                    <label class="block text-[10px] font-black text-rose-400 uppercase mb-2 tracking-widest">Patologías / Observaciones del Socio</label>
+                    <input id="inputPatologia" type="text" oninput="guardarEnStorage()" placeholder="Escribir aquí..." class="bg-transparent text-rose-700 font-bold outline-none w-full text-lg placeholder:text-rose-200">
+                </div>
+
+                <div class="flex bg-slate-100 p-2 rounded-[1.5rem] mb-10 overflow-x-auto gap-1">
+                    <button onclick="cambiarDia('Lunes')" id="btn-Lunes" class="dia-btn flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all tracking-wider">Lunes</button>
+                    <button onclick="cambiarDia('Martes')" id="btn-Martes" class="dia-btn flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all tracking-wider">Martes</button>
+                    <button onclick="cambiarDia('Miércoles')" id="btn-Miércoles" class="dia-btn flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all tracking-wider">Miércoles</button>
+                    <button onclick="cambiarDia('Jueves')" id="btn-Jueves" class="dia-btn flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all tracking-wider">Jueves</button>
+                    <button onclick="cambiarDia('Viernes')" id="btn-Viernes" class="dia-btn flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all tracking-wider">Viernes</button>
+                </div>
+
+                <div class="min-h-[400px]">
+                    <table class="w-full border-separate border-spacing-y-4">
+                        <thead>
+                            <tr class="text-slate-400 text-[10px] uppercase font-black tracking-[0.15em]">
+                                <th class="text-left pl-8 pb-2">Ejercicio</th>
+                                <th class="text-center w-40 pb-2">Series x Reps</th>
+                                <th class="text-center w-28 pb-2">Peso (kg)</th>
+                                <th class="text-center w-28 pb-2">RIR</th>
+                                <th class="w-12 pb-2"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaEjercicios"></tbody>
+                    </table>
+                    <button onclick="agregarEjercicio()" class="mt-6 w-full py-6 border-2 border-dashed border-slate-200 rounded-[1.5rem] text-slate-400 font-black text-xs uppercase hover:bg-indigo-50/50 hover:border-indigo-300 transition-all">
+                        + Añadir nuevo ejercicio al día
+                    </button>
+                </div>
+
+                <div class="mt-16 pt-8 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="eliminarSocio()" class="bg-rose-50 text-rose-500 hover:bg-rose-100 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2">
+                        🗑️ Eliminar Socio Permanentemente
+                    </button>
+                    <div id="saveStatus" class="opacity-0 transition-opacity flex items-center gap-2 text-emerald-500 font-black text-[10px] uppercase italic">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        Guardado automático
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="vacio" class="lg:col-span-3 flex flex-col items-center justify-center text-slate-300 py-40 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
+             <div class="text-6xl mb-6 opacity-20">📂</div>
+             <p class="font-black uppercase tracking-[0.3em] text-[10px]">Seleccioná un alumno de la lista lateral</p>
+        </div>
+    </main>
+
+    <div id="pdfExportTemplate" style="display: none; padding: 50px; background: white; font-family: sans-serif;">
+        <div style="border-bottom: 5px solid #4338ca; padding-bottom: 25px; margin-bottom: 40px;">
+            <h1 id="pdfNombre" style="font-size: 32px; font-weight: 900; margin: 0; color: #1e1b4b;"></h1>
+            <p id="pdfDniPat" style="font-size: 11px; color: #6366f1; margin-top: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;"></p>
+        </div>
+        <div id="pdfContenidoCuerpo"></div>
+    </div>
+
+    <div id="modalSocio" class="hidden fixed inset-0 bg-indigo-950/70 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl">
+            <h2 class="text-2xl font-black mb-8 text-slate-800 tracking-tight">Nuevo Miembro</h2>
+            <div class="space-y-6">
+                <input id="nuevoNombre" type="text" placeholder="Nombre y Apellido" class="w-full bg-slate-50 border-2 border-slate-50 p-5 rounded-2xl font-bold outline-none focus:border-indigo-500 focus:bg-white transition-all">
+                <input id="nuevoDNI" type="number" placeholder="DNI / Identificación" class="w-full bg-slate-50 border-2 border-slate-50 p-5 rounded-2xl font-bold outline-none focus:border-indigo-500 focus:bg-white transition-all">
+                <div class="flex gap-4 pt-4">
+                    <button onclick="document.getElementById('modalSocio').classList.add('hidden')" class="flex-1 font-black text-slate-400 text-xs uppercase tracking-widest">Cerrar</button>
+                    <button onclick="crearSocio()" class="flex-1 bg-indigo-600 text-white py-5 rounded-2xl font-black text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all uppercase">Registrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socios = JSON.parse(localStorage.getItem('gympro_data_v4')) || [];
+        let socioIndex = null;
+        let diaActual = 'Lunes';
+
+        function crearSocio() {
+            const nombre = document.getElementById('nuevoNombre').value;
+            const dni = document.getElementById('nuevoDNI').value;
+            if(!nombre || !dni) return alert("Completá todos los campos");
+            socios.push({ nombre, dni, patologia: "", rutinas: { "Lunes": [], "Martes": [], "Miércoles": [], "Jueves": [], "Viernes": [] } });
+            guardarEnStorage(); renderLista();
+            document.getElementById('modalSocio').classList.add('hidden');
+            document.getElementById('nuevoNombre').value = ""; document.getElementById('nuevoDNI').value = "";
+        }
+
+        function renderLista() {
+            const contenedor = document.getElementById('listaSocios');
+            contenedor.innerHTML = socios.map((s, i) => `
+                <div onclick="abrirSocio(${i})" class="p-6 rounded-[2rem] cursor-pointer transition-all border-2 ${socioIndex === i ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl scale-[1.03]' : 'bg-white border-white shadow-sm hover:border-indigo-100'}">
+                    <p class="font-black text-sm tracking-tight">${s.nombre}</p>
+                    <p class="text-[10px] font-bold opacity-50">DNI: ${s.dni}</p>
+                </div>
+            `).join('');
+        }
+
+        function abrirSocio(i) {
+            socioIndex = i;
+            document.getElementById('vacio').classList.add('hidden');
+            document.getElementById('editorRutina').classList.remove('hidden');
+            document.getElementById('displayNombre').innerText = socios[i].nombre;
+            document.getElementById('displayDNI').innerText = `ID SOCIO: ${socios[i].dni}`;
+            document.getElementById('inputPatologia').value = socios[i].patologia;
+            renderRutina(); renderLista();
+        }
+
+        function cambiarDia(dia) { diaActual = dia; renderRutina(); }
+
+        function renderRutina() {
+            document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-100'));
+            document.getElementById(`btn-${diaActual}`).classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-100');
+
+            const tabla = document.getElementById('tablaEjercicios');
+            tabla.innerHTML = socios[socioIndex].rutinas[diaActual].map((ej, i) => `
+                <tr class="bg-white">
+                    <td class="p-6 pl-8 border-y border-l border-slate-100 rounded-l-[1.5rem] shadow-sm">
+                        <input type="text" value="${ej.n}" oninput="editEj(${i},'n',this.value)" class="bg-transparent font-black text-lg w-full outline-none placeholder:text-slate-200" placeholder="Nombre Ejercicio">
+                    </td>
+                    <td class="p-6 border-y border-slate-100 shadow-sm text-center">
+                        <input type="text" value="${ej.r}" oninput="editEj(${i},'r',this.value)" class="bg-transparent text-center text-sm font-bold w-full outline-none text-slate-500" placeholder="0x0">
+                    </td>
+                    <td class="p-6 border-y border-slate-100 shadow-sm text-center">
+                        <input type="number" value="${ej.p}" oninput="editEj(${i},'p',this.value)" class="bg-transparent text-center font-black text-xl w-full outline-none text-indigo-900">
+                    </td>
+                    <td class="p-6 border-y border-slate-100 shadow-sm text-center">
+                        <input type="number" value="${ej.rir}" oninput="editEj(${i},'rir',this.value)" class="bg-transparent text-center text-indigo-600 font-black text-xl w-full outline-none">
+                    </td>
+                    <td class="p-6 border-y border-r border-slate-100 rounded-r-[1.5rem] shadow-sm text-right pr-6">
+                        <button onclick="eliminarEj(${i})" class="text-slate-200 hover:text-rose-500 font-bold text-2xl">✕</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editEj(i, campo, val) { socios[socioIndex].rutinas[diaActual][i][campo] = val; guardarEnStorage(); }
+        function agregarEjercicio() { socios[socioIndex].rutinas[diaActual].push({ n: '', r: '3x10', p: 0, rir: 2 }); renderRutina(); guardarEnStorage(); }
+        function eliminarEj(i) { socios[socioIndex].rutinas[diaActual].splice(i, 1); renderRutina(); guardarEnStorage(); }
+        
+        function eliminarSocio() {
+            if(confirm(`⚠️ ¿Estás seguro de eliminar permanentemente a ${socios[socioIndex].nombre}?`)) {
+                socios.splice(socioIndex, 1);
+                socioIndex = null;
+                guardarEnStorage();
+                renderLista();
+                document.getElementById('editorRutina').classList.add('hidden');
+                document.getElementById('vacio').classList.remove('hidden');
+            }
+        }
+
+        function guardarEnStorage() {
+            if(socioIndex !== null) socios[socioIndex].patologia = document.getElementById('inputPatologia').value;
+            localStorage.setItem('gympro_data_v4', JSON.stringify(socios));
+            const status = document.getElementById('saveStatus');
+            status.style.opacity = 1; setTimeout(() => status.style.opacity = 0, 1000);
+        }
+
+async function descargarPDFSemanal() {
+    const socio = socios[socioIndex];
+    const temp = document.getElementById('pdfContenidoCuerpo');
+    document.getElementById('pdfNombre').innerText = socio.nombre.toUpperCase();
+    document.getElementById('pdfDniPat').innerText = `ID: ${socio.dni} | PATOLOGIA: ${socio.patologia || 'NINGUNA'}`;
+    
+    let htmlPDF = "";
+    ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"].forEach(dia => {
+        const ejs = socio.rutinas[dia];
+        if(ejs.length > 0) {
+            htmlPDF += `
+            <div style="margin-bottom: 15px; page-break-inside: avoid;">
+                <h2 style="font-size: 12px; background: #f5f3ff; color: #4338ca; padding: 4px 12px; border-radius: 6px; font-weight: 900; margin-bottom: 5px; display: inline-block;">${dia.toUpperCase()}</h2>
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;">
+                    <thead>
+                        <tr style="background: #f8fafc; color: #64748b; font-size: 9px; text-transform: uppercase;">
+                            <th style="text-align: left; padding: 5px 10px; border-bottom: 1px solid #e2e8f0;">Ejercicio</th>
+                            <th style="text-align: center; padding: 5px; border-bottom: 1px solid #e2e8f0;">S x R</th>
+                            <th style="text-align: center; padding: 5px; border-bottom: 1px solid #e2e8f0;">KG</th>
+                            <th style="text-align: center; padding: 5px; border-bottom: 1px solid #e2e8f0;">RIR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${ejs.map(ej => `
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 6px 10px; font-weight: 700; font-size: 11px; color: #1e1b4b; width: 50%;">${ej.n}</td>
+                                <td style="padding: 6px; text-align: center; font-size: 10px; color: #64748b;">${ej.r}</td>
+                                <td style="padding: 6px; text-align: center; font-weight: 800; font-size: 11px;">${ej.p}kg</td>
+                                <td style="padding: 6px; text-align: center; color: #4f46e5; font-weight: 800; font-size: 11px;">${ej.rir}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+    });
+
+    temp.innerHTML = htmlPDF || "<p style='text-align: center; color: #94a3b8;'>Sin ejercicios.</p>";
+    const element = document.getElementById('pdfExportTemplate');
+    element.style.display = 'block';
+    
+    const opt = { 
+        margin: [0.3, 0.3], 
+        filename: `Plan_${socio.nombre}.pdf`, 
+        image: { type: 'jpeg', quality: 1 }, 
+        html2canvas: { scale: 3 }, 
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } 
+    };
+    
+    await html2pdf().set(opt).from(element).save();
+    element.style.display = 'none';
+}
+
+        renderLista();
+    </script>
+</body>
+</html>
